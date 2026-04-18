@@ -17,8 +17,49 @@ After successful registration, you will receive an email confirming you have acc
 
 You have two options here due to the recent release of OpenCode's Desktop UI. Some are very comfortable working in the terminal while others may prefer a more app-like experience. These two are not exclusive -- the harness is independent of the UI so you can use either or both if you prefer.
 
-Download and install from here:
-<https://opencode.ai/download>
+#### Option A: OpenCode Terminal (CLI/TUI)
+
+The terminal version runs directly in your shell. Install using any of the following methods:
+
+```bash
+# Install script (easiest)
+curl -fsSL https://opencode.ai/install | bash
+
+# Or via Homebrew (macOS/Linux)
+brew install anomalyco/tap/opencode
+
+# Or via npm
+npm install -g opencode-ai
+```
+
+Once installed, navigate to your project directory and run:
+
+```bash
+opencode
+```
+
+On first launch, run `/init` to have OpenCode analyze your project and generate an `AGENTS.md` file that helps it understand your codebase.
+
+#### Option B: OpenCode Desktop (Beta)
+
+The desktop app provides a graphical interface and is available for macOS, Windows, and Linux.
+
+**macOS (Homebrew):**
+
+```bash
+brew install --cask opencode-desktop
+```
+
+**Direct download:** Visit <https://opencode.ai/download> to download the installer for your platform:
+- macOS (Apple Silicon or Intel) -- `.dmg`
+- Windows (x64) -- `.exe` installer
+- Linux -- `.deb` or `.rpm`
+
+#### IDE Extensions
+
+OpenCode also offers extensions for VS Code, Cursor, Zed, Windsurf, and VSCodium. See the [IDE documentation](https://opencode.ai/docs/ide/) for setup instructions.
+
+For the full list of installation options and detailed configuration, see the official [OpenCode documentation](https://opencode.ai/docs/).
 
 ### Step 3: Log into GitHub Copilot via OpenCode
 
@@ -33,16 +74,4 @@ This repository contains shared resources to enhance your OpenCode setup:
 - **Plugins** -- Extensions and integrations for OpenCode
 - **Skills** -- Reusable agent skills for common workflows
 
-## FAQ
-
-**Q: Can't I just use GitHub Copilot as my model provider in Claude Code / Co-Work / Claude Desktop?**
-
-A: While there is technically a workaround / hack for this, Anthropic's tool calling does not work reliably with other model providers.
-
-**Q: Can I use another model provider with OpenCode?**
-
-A: Yes. However, they may not be approved for Cisco data. One of the many advantages of using this setup is being able to select the models and model providers within any given session.
-
-**Q: I have a GPU running a model locally (Ollama + DGX Spark, Jetson, Mac Mini, etc). Can I use OpenCode with GitHub Copilot and also use my local model?**
-
-A: Absolutely. You can add multiple providers and use the `/models` selection to switch between them.
+See the [FAQ](faq.md) for common questions.

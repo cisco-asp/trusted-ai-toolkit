@@ -9,3 +9,4 @@ A shared repository of resources for using OpenCode with GitHub Copilot within C
 - **Configuration Examples** -- Ready-to-use OpenCode configuration files and templates
 - **Plugins** -- Extensions and integrations for OpenCode
 - **Skills** -- Reusable agent skills for common workflows
+- **[FAQ](docs/faq.md)** -- Frequently asked questions
