@@ -65,6 +65,58 @@ For the full list of installation options and detailed configuration, see the of
 
 Once you have your approved Copilot account and OpenCode installed, you must set GitHub Copilot up as your model provider to get access to the premium / flagship models.
 
+Remember, your GitHub Copilot username is **yourcecid_cisco** and authentication uses Cisco SSO.
+
+#### Using the Terminal (TUI)
+
+1. Launch OpenCode in your terminal:
+
+   ```bash
+   opencode
+   ```
+
+2. Run the `/connect` command and select **GitHub Copilot Public**:
+
+   ```
+   /connect
+   ```
+
+3. OpenCode will display a device code and a URL. Navigate to [github.com/login/device](https://github.com/login/device) in your browser. Log in with your Cisco username (**yourcecid_cisco**) and enter the code shown:
+
+   ```
+   ┌ Login with GitHub Copilot
+   │
+   │ https://github.com/login/device
+   │
+   │ Enter code: XXXX-XXXX
+   │
+   └ Waiting for authorization...
+   ```
+
+4. After authorizing in your browser, OpenCode will confirm the connection. Run `/models` to select a model:
+
+   ```
+   /models
+   ```
+
+   You will see a list of available models from GitHub Copilot. Select one to begin your session.
+
+#### Using the Desktop App
+
+1. Open the OpenCode Desktop application.
+
+2. Use the `/connect` command in the chat input and select **GitHub Copilot Public**.
+
+3. The app will display a device code. Open [github.com/login/device](https://github.com/login/device) in your browser, log in with your Cisco username (**yourcecid_cisco**), and enter the code to authorize.
+
+4. Once authorized, use `/models` to select your preferred model from the GitHub Copilot provider.
+
+#### Selecting a Model
+
+After connecting, you can switch between models at any time using the `/models` command. GitHub Copilot provides access to premium models including Claude, GPT, and Gemini families. Some models may require a [GitHub Copilot Pro+ subscription](https://github.com/features/copilot/plans).
+
+For more details on provider configuration, see the [OpenCode Providers documentation](https://opencode.ai/docs/providers/#github-copilot).
+
 ### Step 4: Install and Share Useful Tools and Skills
 
 This repository contains shared resources to enhance your OpenCode setup:
