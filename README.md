@@ -5,7 +5,7 @@ A shared repository of resources for using OpenCode with GitHub Copilot within C
 ## What's Inside
 
 - **[Getting Started](docs/getting-started.md)** -- Setup guide for OpenCode + GitHub Copilot
-- **[MCP Servers](mcp-servers/)** -- Model Context Protocol servers for extending agent capabilities (Context7, Obsidian, Splunk, NetBox, Kubernetes, Airtable)
+- **[MCP Servers](mcp-servers/)** -- Model Context Protocol servers for extending agent capabilities (Context7, Obsidian, Splunk, NetBox, Kubernetes)
 - **[Skills](skills/)** -- Reusable agent skills for common workflows (cisco-brand, deck, pptx, crd-builder, cisco-config-lookup, find-skills, playwright-cli)
 - **Configuration Examples** -- Ready-to-use OpenCode configuration files and templates
 - **[FAQ](docs/faq.md)** -- Frequently asked questions

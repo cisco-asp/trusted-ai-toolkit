@@ -13,7 +13,6 @@ Each MCP server runs as a local process (or connects to a remote endpoint) and e
 | **Splunk** | Run SPL queries, browse indexes, AI-assisted search | [splunk.md](splunk.md) |
 | **NetBox** | Query DCIM/IPAM infrastructure data (devices, IPs, VLANs) | [netbox.md](netbox.md) |
 | **Kubernetes** | Manage clusters -- pods, logs, exec, deployments, scaling | [kubernetes.md](kubernetes.md) |
-| **Airtable** | Query and manage Airtable bases, tables, and records | [airtable.md](airtable.md) |
 
 ## How MCP Servers Work in OpenCode
 

@@ -121,7 +121,7 @@ For more details on provider configuration, see the [OpenCode Providers document
 
 This repository contains shared resources to enhance your OpenCode setup. Browse each directory for setup instructions and a README listing what's available:
 
-- **[MCP Servers](../mcp-servers/)** -- Model Context Protocol servers for extending agent capabilities (Context7, Obsidian, Splunk, NetBox, Kubernetes, Airtable, and more).
+- **[MCP Servers](../mcp-servers/)** -- Model Context Protocol servers for extending agent capabilities (Context7, Obsidian, Splunk, NetBox, Kubernetes, and more).
 - **[Skills](../skills/)** -- Reusable agent skills for common workflows. The [skills README](../skills/README.md) explains how to install them with a natural-language OpenCode prompt and documents which skills depend on each other (e.g. the `cisco-brand` + `pptx` + `deck` presentation bundle).
 - **[Docs](../docs/)** -- Additional guides including this getting-started doc and the FAQ.
 
