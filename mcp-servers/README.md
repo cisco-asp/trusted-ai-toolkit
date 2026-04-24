@@ -8,6 +8,7 @@ Each MCP server runs as a local process (or connects to a remote endpoint) and e
 
 | Server | Description | Guide |
 |--------|-------------|-------|
+| **Context7** | Pull up-to-date, version-specific library/SDK/API docs into prompts | [context7.md](context7.md) |
 | **Obsidian** | Read, write, and search Obsidian vault notes | [obsidian.md](obsidian.md) |
 | **Splunk** | Run SPL queries, browse indexes, AI-assisted search | [splunk.md](splunk.md) |
 | **NetBox** | Query DCIM/IPAM infrastructure data (devices, IPs, VLANs) | [netbox.md](netbox.md) |
