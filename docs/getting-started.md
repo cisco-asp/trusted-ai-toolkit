@@ -119,11 +119,21 @@ For more details on provider configuration, see the [OpenCode Providers document
 
 ### Step 4: Install and Share Useful Tools and Skills
 
-This repository contains shared resources to enhance your OpenCode setup:
+This repository contains shared resources to enhance your OpenCode setup. Browse each directory for setup instructions and a README listing what's available:
 
-- **MCP Servers** -- Model Context Protocol servers for extending agent capabilities
-- **OpenCode Configuration Examples** -- Ready-to-use configuration files and templates
-- **Plugins** -- Extensions and integrations for OpenCode
-- **Skills** -- Reusable agent skills for common workflows
+- **[MCP Servers](../mcp-servers/)** -- Model Context Protocol servers for extending agent capabilities (Obsidian, Splunk, NetBox, Kubernetes, Airtable, and more).
+- **[Skills](../skills/)** -- Reusable agent skills for common workflows. The [skills README](../skills/README.md) explains how to install them with a natural-language OpenCode prompt and documents which skills depend on each other (e.g. the `cisco-brand` + `pptx` + `deck` presentation bundle).
+- **[Docs](../docs/)** -- Additional guides including this getting-started doc and the FAQ.
+
+#### Quick install: skills
+
+The fastest way to install any skill from this repo is to ask OpenCode in plain English, for example:
+
+```
+Install the cisco-brand, pptx, and deck skills from
+https://github.com/cisco-asp/trusted-ai-toolkit
+```
+
+OpenCode will resolve that to the underlying `npx skills add cisco-asp/trusted-ai-toolkit@<skill>` command and register the skills under `~/.agents/skills/`. See the [skills README](../skills/README.md) for the full list and dependency notes.
 
 See the [FAQ](faq.md) for common questions.
