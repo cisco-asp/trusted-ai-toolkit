@@ -18,6 +18,14 @@ Three workflows are supported, each suited to a different starting point:
    repack. Use this only when the higher-level tools cannot express the
    change.
 
+> **Skill location:** This skill is installed at `~/.agents/skills/pptx/`.
+> All commands below show paths relative to that skill dir. When the
+> current working directory is NOT the skill dir (the usual case),
+> prefix `templates/...` and `scripts/...` with the absolute skill path,
+> e.g. `~/.agents/skills/pptx/templates/Cisco_PowerPoint_Template_DARK_04-01-2026.potx`.
+> The Cisco templates and helper scripts are NEVER located in the
+> user's project directory.
+
 ---
 
 ## Workflows
