@@ -4,6 +4,12 @@ Read, write, search, and manage notes in an [Obsidian](https://obsidian.md/) vau
 
 **Package:** [`@mauricio.wolff/mcp-obsidian`](https://www.npmjs.com/package/@mauricio.wolff/mcp-obsidian)
 
+## What is Obsidian?
+
+[Obsidian](https://obsidian.md/) is a free, cross-platform knowledge management application that stores notes as plain Markdown files in a local folder called a "vault." Unlike cloud-based note apps, your data stays entirely on your filesystem -- there is no proprietary format or vendor lock-in. Obsidian supports bidirectional linking between notes, creating a personal knowledge graph that makes it easy to connect ideas across topics. It also has a rich plugin ecosystem, tagging, YAML frontmatter for metadata, and a graph view for visualizing relationships between notes.
+
+For SEs, Obsidian is useful for organizing customer notes, design docs, meeting minutes, runbooks, and technical reference material -- all in Markdown that works well with version control and AI tooling. With this MCP server, OpenCode can read, search, and update your vault directly during a session.
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18+)
