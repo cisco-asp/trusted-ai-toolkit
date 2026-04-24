@@ -205,14 +205,17 @@ Once all visualizations are confirmed:
 Every deck MUST be built from the official Cisco PowerPoint template. This ensures correct slide masters, layouts, and branding are embedded in the output file.
 
 ### Base Template
-- **Source file**: `Cisco_PowerPoint_Template_DARK.potx`
-- Look for the template in the current working directory first. If not found, ask the user for its location.
-- This is a `.potx` (PowerPoint template) containing slide masters, layouts, and sample slides
+- **Source file**: `Cisco_PowerPoint_Template_DARK_04-01-2026.potx` (dark) or `Cisco_PowerPoint_Template_LIGHT_04-01-2026.potx` (light)
+- **Location**: Templates are bundled with the `pptx` skill at `~/.agents/skills/pptx/templates/`. Always reference by full absolute path:
+  - Dark: `~/.agents/skills/pptx/templates/Cisco_PowerPoint_Template_DARK_04-01-2026.potx`
+  - Light: `~/.agents/skills/pptx/templates/Cisco_PowerPoint_Template_LIGHT_04-01-2026.potx`
+- Do NOT look for the template in the current working directory — it lives in the pptx skill's `templates/` directory.
+- These are `.potx` (PowerPoint template) files containing slide masters, layouts, and sample slides
 
 ### Build Process
 Using `python-pptx`:
 
-1. **Copy the template** — open `Cisco_PowerPoint_Template_DARK.potx` as the base presentation
+1. **Copy the template** — open `Cisco_PowerPoint_Template_DARK_04-01-2026.potx` (from `~/.agents/skills/pptx/templates/`) as the base presentation
 2. **Count existing slides** — note how many slides are already in the template (these are the "spare" reference slides)
 3. **Insert all new content slides at the BEGINNING** — every slide you generate must be inserted at index 0 (prepended), so that new content appears first in the deck
 4. **Leave template slides at the END** — the original template slides remain untouched at the back of the deck as spare copies the user can reference or delete
@@ -227,9 +230,11 @@ Using `python-pptx`:
 ```python
 from pptx import Presentation
 import shutil
+import os
 
 # Step 1: Copy the template to the output path
-template_path = "Cisco_PowerPoint_Template_DARK.potx"
+# Template lives in the pptx skill's templates dir — NOT the current working directory
+template_path = os.path.expanduser("~/.agents/skills/pptx/templates/Cisco_PowerPoint_Template_DARK_04-01-2026.potx")
 output_path = "My_Deck.pptx"
 shutil.copy2(template_path, output_path)
 
