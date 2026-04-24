@@ -40,6 +40,12 @@ SLIDE_REL_TYPE = (
 SLIDE_CT = (
     "application/vnd.openxmlformats-officedocument.presentationml.slide+xml"
 )
+TEMPLATE_MAIN_CT = (
+    "application/vnd.openxmlformats-officedocument.presentationml.template.main+xml"
+)
+PRESENTATION_MAIN_CT = (
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"
+)
 
 
 def _unpack(src: Path, dst: Path) -> None:
@@ -284,11 +290,16 @@ def rearrange(src_path: str, dst_path: str, indices: list[int]) -> None:
             str(pres_xml), xml_declaration=True, encoding="UTF-8", standalone=True
         )
 
-        # Update [Content_Types].xml — drop deleted overrides, add for new slides
+        # Update [Content_Types].xml — drop deleted overrides, add for new slides,
+        # and convert template content type to presentation content type so the
+        # result is always a usable .pptx (even when the source was a .potx).
         ct_tree = etree.parse(str(ct_xml))
         ct_root = ct_tree.getroot()
         existing_overrides = {}
         for ovr in ct_root.findall(f"{{{CT_NS}}}Override"):
+            ct = ovr.get("ContentType", "")
+            if ct == TEMPLATE_MAIN_CT:
+                ovr.set("ContentType", PRESENTATION_MAIN_CT)
             existing_overrides[ovr.get("PartName", "")] = ovr
 
         # Remove overrides for deleted files

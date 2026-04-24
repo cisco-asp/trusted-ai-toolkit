@@ -32,6 +32,10 @@ from pptx.util import Pt, Emu
 from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 
+# Local import — make script runnable from any cwd
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _pptx_utils import ensure_pptx  # noqa: E402
+
 
 _ALIGN_MAP = {
     "LEFT": PP_ALIGN.LEFT,
@@ -134,7 +138,9 @@ def replace(pptx_path: str, replacement_path: str, output_path: str) -> None:
     with open(replacement_path, "r", encoding="utf-8") as f:
         replacements = json.load(f)
 
-    prs = Presentation(pptx_path)
+    # Auto-convert .potx → .pptx if needed
+    usable = ensure_pptx(pptx_path)
+    prs = Presentation(str(usable))
 
     # First pass: build a mapping of (slide_idx, shape_order) → shape object
     # Mirrors the ordering logic from inventory.py

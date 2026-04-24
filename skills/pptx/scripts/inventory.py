@@ -20,6 +20,10 @@ from pptx.util import Inches, Pt, Emu
 from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 
+# Local import — make script runnable from any cwd
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _pptx_utils import ensure_pptx  # noqa: E402
+
 
 # Map alignment enum to string
 _ALIGN_MAP = {
@@ -192,7 +196,9 @@ def _extract_shape(shape) -> dict | None:
 
 def inventory(pptx_path: str) -> dict:
     """Build a full text inventory of the presentation."""
-    prs = Presentation(pptx_path)
+    # Auto-convert .potx → .pptx if needed
+    usable = ensure_pptx(pptx_path)
+    prs = Presentation(str(usable))
     result: dict = {}
 
     for slide_idx, slide in enumerate(prs.slides):

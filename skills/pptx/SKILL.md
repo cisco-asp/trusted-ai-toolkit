@@ -28,6 +28,12 @@ Use this when the user provides an existing deck or asks for a Cisco
 branded presentation. The bundled `templates/` directory contains the
 official Cisco PowerPoint templates (light/dark themes and icon kits).
 
+> **Note on `.potx` templates:** All scripts accept `.potx` (PowerPoint
+> template) files directly. They are auto-converted to `.pptx`
+> internally — you don't need to convert them by hand. The output is
+> always written as a regular `.pptx` so it opens normally in
+> PowerPoint and can be edited with `python-pptx`.
+
 **Step 1 — Pick slides from a template:**
 ```
 python scripts/rearrange.py templates/Cisco_PowerPoint_Template_LIGHT_04-01-2026.potx \
@@ -149,6 +155,7 @@ scripts/
   rearrange.py              # Pick & duplicate slides from a source deck
   thumbnail.py              # Render thumbnail grid (needs soffice)
   html2pptx.js              # HTML → PPTX converter (Playwright + PptxGenJS)
+  _pptx_utils.py            # Shared helpers (e.g. .potx → .pptx auto-conversion)
   package.json              # Node deps
 ooxml/
   scripts/
