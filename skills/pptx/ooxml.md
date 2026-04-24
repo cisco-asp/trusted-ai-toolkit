@@ -1,427 +1,145 @@
-# Office Open XML Technical Reference for PowerPoint
+# OOXML Reference
 
-**Important: Read this entire document before starting.** Critical XML schema rules and formatting requirements are covered throughout. Incorrect implementation can create invalid PPTX files that PowerPoint cannot open.
+This document explains the Office Open XML (OOXML) package format used by
+PowerPoint (`.pptx`), Word (`.docx`), and Excel (`.xlsx`) files, and how to
+edit them directly at the XML level.
 
-## Technical Guidelines
+Use this reference when you need precise control beyond what `python-pptx`
+or `PptxGenJS` exposes — for example, manipulating animations, transitions,
+SmartArt, custom XML parts, embedded fonts, or repairing damaged files.
 
-### Schema Compliance
-- **Element ordering in `<p:txBody>`**: `<a:bodyPr>`, `<a:lstStyle>`, `<a:p>`
-- **Whitespace**: Add `xml:space='preserve'` to `<a:t>` elements with leading/trailing spaces
-- **Unicode**: Escape characters in ASCII content: `"` becomes `&#8220;`
-- **Images**: Add to `ppt/media/`, reference in slide XML, set dimensions to fit slide bounds
-- **Relationships**: Update `ppt/slides/_rels/slideN.xml.rels` for each slide's resources
-- **Dirty attribute**: Add `dirty="0"` to `<a:rPr>` and `<a:endParaRPr>` elements to indicate clean state
+---
 
-## Presentation Structure
+## Package structure
 
-### Basic Slide Structure
-```xml
-<!-- ppt/slides/slide1.xml -->
-<p:sld>
-  <p:cSld>
-    <p:spTree>
-      <p:nvGrpSpPr>...</p:nvGrpSpPr>
-      <p:grpSpPr>...</p:grpSpPr>
-      <!-- Shapes go here -->
-    </p:spTree>
-  </p:cSld>
-</p:sld>
+An OOXML file is a ZIP archive containing XML "parts" plus media. The key
+top-level entries are:
+
+```
+[Content_Types].xml      # MIME types for every part in the package
+_rels/.rels              # Root relationships (points to the main document)
+docProps/                # Core, app, and custom properties
+ppt/                     # PowerPoint payload (or word/, xl/)
+  presentation.xml       # Main document; lists slide IDs and references
+  _rels/presentation.xml.rels
+  slides/
+    slide1.xml
+    slide2.xml
+    _rels/slide1.xml.rels
+  slideLayouts/
+  slideMasters/
+  theme/
+  media/                 # Images, audio, video
 ```
 
-### Text Box / Shape with Text
-```xml
-<p:sp>
-  <p:nvSpPr>
-    <p:cNvPr id="2" name="Title"/>
-    <p:cNvSpPr>
-      <a:spLocks noGrp="1"/>
-    </p:cNvSpPr>
-    <p:nvPr>
-      <p:ph type="ctrTitle"/>
-    </p:nvPr>
-  </p:nvSpPr>
-  <p:spPr>
-    <a:xfrm>
-      <a:off x="838200" y="365125"/>
-      <a:ext cx="7772400" cy="1470025"/>
-    </a:xfrm>
-  </p:spPr>
-  <p:txBody>
-    <a:bodyPr/>
-    <a:lstStyle/>
-    <a:p>
-      <a:r>
-        <a:t>Slide Title</a:t>
-      </a:r>
-    </a:p>
-  </p:txBody>
-</p:sp>
+### Content Types
+`[Content_Types].xml` declares the MIME type of every part. New parts must
+be registered here either by extension (`<Default>`) or by exact path
+(`<Override>`). Adding a slide without registering it produces a corrupt
+file that PowerPoint will refuse to open.
+
+### Relationships
+Each `*.rels` file describes outbound links from a part. Relationship
+targets are resolved relative to the *parent directory* of the `_rels`
+folder. A `slide1.xml.rels` entry with `Target="../media/image1.png"`
+resolves to `ppt/media/image1.png`.
+
+### Slide referencing
+The slide order shown in PowerPoint is determined by the
+`<p:sldIdLst>` element inside `ppt/presentation.xml`, which references
+slides by relationship ID (`r:id`). The relationship file
+`ppt/_rels/presentation.xml.rels` then maps each rId to a slide XML file.
+
+---
+
+## Workflow
+
+```
+unpack → edit XML → validate → pack
 ```
 
-### Text Formatting
-```xml
-<!-- Bold -->
-<a:r>
-  <a:rPr b="1"/>
-  <a:t>Bold Text</a:t>
-</a:r>
-
-<!-- Italic -->
-<a:r>
-  <a:rPr i="1"/>
-  <a:t>Italic Text</a:t>
-</a:r>
-
-<!-- Underline -->
-<a:r>
-  <a:rPr u="sng"/>
-  <a:t>Underlined</a:t>
-</a:r>
-
-<!-- Highlight -->
-<a:r>
-  <a:rPr>
-    <a:highlight>
-      <a:srgbClr val="FFFF00"/>
-    </a:highlight>
-  </a:rPr>
-  <a:t>Highlighted Text</a:t>
-</a:r>
-
-<!-- Font and Size -->
-<a:r>
-  <a:rPr sz="2400" typeface="Arial">
-    <a:solidFill>
-      <a:srgbClr val="FF0000"/>
-    </a:solidFill>
-  </a:rPr>
-  <a:t>Colored Arial 24pt</a:t>
-</a:r>
-
-<!-- Complete formatting example -->
-<a:r>
-  <a:rPr lang="en-US" sz="1400" b="1" dirty="0">
-    <a:solidFill>
-      <a:srgbClr val="FAFAFA"/>
-    </a:solidFill>
-  </a:rPr>
-  <a:t>Formatted text</a:t>
-</a:r>
+### 1. Unpack
 ```
-
-### Lists
-```xml
-<!-- Bullet list -->
-<a:p>
-  <a:pPr lvl="0">
-    <a:buChar char="•"/>
-  </a:pPr>
-  <a:r>
-    <a:t>First bullet point</a:t>
-  </a:r>
-</a:p>
-
-<!-- Numbered list -->
-<a:p>
-  <a:pPr lvl="0">
-    <a:buAutoNum type="arabicPeriod"/>
-  </a:pPr>
-  <a:r>
-    <a:t>First numbered item</a:t>
-  </a:r>
-</a:p>
-
-<!-- Second level indent -->
-<a:p>
-  <a:pPr lvl="1">
-    <a:buChar char="•"/>
-  </a:pPr>
-  <a:r>
-    <a:t>Indented bullet</a:t>
-  </a:r>
-</a:p>
+python ooxml/scripts/unpack.py input.pptx workdir/
 ```
+Extracts the archive into a directory you can browse and edit.
 
-### Shapes
-```xml
-<!-- Rectangle -->
-<p:sp>
-  <p:nvSpPr>
-    <p:cNvPr id="3" name="Rectangle"/>
-    <p:cNvSpPr/>
-    <p:nvPr/>
-  </p:nvSpPr>
-  <p:spPr>
-    <a:xfrm>
-      <a:off x="1000000" y="1000000"/>
-      <a:ext cx="3000000" cy="2000000"/>
-    </a:xfrm>
-    <a:prstGeom prst="rect">
-      <a:avLst/>
-    </a:prstGeom>
-    <a:solidFill>
-      <a:srgbClr val="FF0000"/>
-    </a:solidFill>
-    <a:ln w="25400">
-      <a:solidFill>
-        <a:srgbClr val="000000"/>
-      </a:solidFill>
-    </a:ln>
-  </p:spPr>
-</p:sp>
+### 2. Edit
+Edit XML files directly. Keep namespaces intact. The most common
+namespaces:
 
-<!-- Rounded Rectangle -->
-<p:sp>
-  <p:spPr>
-    <a:prstGeom prst="roundRect">
-      <a:avLst/>
-    </a:prstGeom>
-  </p:spPr>
-</p:sp>
+| Prefix | URI                                                                   |
+|--------|------------------------------------------------------------------------|
+| `a`    | `http://schemas.openxmlformats.org/drawingml/2006/main`               |
+| `p`    | `http://schemas.openxmlformats.org/presentationml/2006/main`          |
+| `r`    | `http://schemas.openxmlformats.org/officeDocument/2006/relationships` |
+| `mc`   | `http://schemas.openxmlformats.org/markup-compatibility/2006`         |
 
-<!-- Circle/Ellipse -->
-<p:sp>
-  <p:spPr>
-    <a:prstGeom prst="ellipse">
-      <a:avLst/>
-    </a:prstGeom>
-  </p:spPr>
-</p:sp>
+### 3. Validate
 ```
-
-### Images
-```xml
-<p:pic>
-  <p:nvPicPr>
-    <p:cNvPr id="4" name="Picture">
-      <a:hlinkClick r:id="" action="ppaction://media"/>
-    </p:cNvPr>
-    <p:cNvPicPr>
-      <a:picLocks noChangeAspect="1"/>
-    </p:cNvPicPr>
-    <p:nvPr/>
-  </p:nvPicPr>
-  <p:blipFill>
-    <a:blip r:embed="rId2"/>
-    <a:stretch>
-      <a:fillRect/>
-    </a:stretch>
-  </p:blipFill>
-  <p:spPr>
-    <a:xfrm>
-      <a:off x="1000000" y="1000000"/>
-      <a:ext cx="3000000" cy="2000000"/>
-    </a:xfrm>
-    <a:prstGeom prst="rect">
-      <a:avLst/>
-    </a:prstGeom>
-  </p:spPr>
-</p:pic>
+python ooxml/scripts/validate.py workdir/
 ```
+Performs structural checks:
+- `[Content_Types].xml` declares every slide on disk
+- All relationship targets resolve to real files
+- `presentation.xml` slide list matches files in `ppt/slides/`
+- Each slide references a layout that exists
 
-### Tables
-```xml
-<p:graphicFrame>
-  <p:nvGraphicFramePr>
-    <p:cNvPr id="5" name="Table"/>
-    <p:cNvGraphicFramePr>
-      <a:graphicFrameLocks noGrp="1"/>
-    </p:cNvGraphicFramePr>
-    <p:nvPr/>
-  </p:nvGraphicFramePr>
-  <p:xfrm>
-    <a:off x="1000000" y="1000000"/>
-    <a:ext cx="6000000" cy="2000000"/>
-  </p:xfrm>
-  <a:graphic>
-    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table">
-      <a:tbl>
-        <a:tblGrid>
-          <a:gridCol w="3000000"/>
-          <a:gridCol w="3000000"/>
-        </a:tblGrid>
-        <a:tr h="500000">
-          <a:tc>
-            <a:txBody>
-              <a:bodyPr/>
-              <a:lstStyle/>
-              <a:p>
-                <a:r>
-                  <a:t>Cell 1</a:t>
-                </a:r>
-              </a:p>
-            </a:txBody>
-          </a:tc>
-          <a:tc>
-            <a:txBody>
-              <a:bodyPr/>
-              <a:lstStyle/>
-              <a:p>
-                <a:r>
-                  <a:t>Cell 2</a:t>
-                </a:r>
-              </a:p>
-            </a:txBody>
-          </a:tc>
-        </a:tr>
-      </a:tbl>
-    </a:graphicData>
-  </a:graphic>
-</p:graphicFrame>
+### 4. Pack
 ```
-
-### Slide Layouts
-
-```xml
-<!-- Title Slide Layout -->
-<p:sp>
-  <p:nvSpPr>
-    <p:nvPr>
-      <p:ph type="ctrTitle"/>
-    </p:nvPr>
-  </p:nvSpPr>
-  <!-- Title content -->
-</p:sp>
-
-<p:sp>
-  <p:nvSpPr>
-    <p:nvPr>
-      <p:ph type="subTitle" idx="1"/>
-    </p:nvPr>
-  </p:nvSpPr>
-  <!-- Subtitle content -->
-</p:sp>
-
-<!-- Content Slide Layout -->
-<p:sp>
-  <p:nvSpPr>
-    <p:nvPr>
-      <p:ph type="title"/>
-    </p:nvPr>
-  </p:nvSpPr>
-  <!-- Slide title -->
-</p:sp>
-
-<p:sp>
-  <p:nvSpPr>
-    <p:nvPr>
-      <p:ph type="body" idx="1"/>
-    </p:nvPr>
-  </p:nvSpPr>
-  <!-- Content body -->
-</p:sp>
+python ooxml/scripts/pack.py workdir/ output.pptx
 ```
+Repacks the directory into a valid OOXML archive. `[Content_Types].xml`
+and `_rels/.rels` are written first as required by the OPC specification.
 
-## File Updates
+---
 
-When adding content, update these files:
+## Schema reference
 
-**`ppt/_rels/presentation.xml.rels`:**
-```xml
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide1.xml"/>
-<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="slideMasters/slideMaster1.xml"/>
-```
+The `ooxml/schemas/` directory contains the public XSD schemas used by
+OOXML. They are sourced from:
 
-**`ppt/slides/_rels/slide1.xml.rels`:**
-```xml
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
-<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.png"/>
-```
+- **ECMA-376 4th edition** — Office Open XML File Formats
+- **ISO/IEC 29500-4:2016** — Transitional and Strict conformance schemas
+- **Microsoft extensions** — published vendor namespaces
 
-**`[Content_Types].xml`:**
-```xml
-<Default Extension="png" ContentType="image/png"/>
-<Default Extension="jpg" ContentType="image/jpeg"/>
-<Override PartName="/ppt/slides/slide1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>
-```
+These are open standards; they are bundled here for offline reference only.
 
-**`ppt/presentation.xml`:**
-```xml
-<p:sldIdLst>
-  <p:sldId id="256" r:id="rId1"/>
-  <p:sldId id="257" r:id="rId2"/>
-</p:sldIdLst>
-```
+---
 
-**`docProps/app.xml`:** Update slide count and statistics
-```xml
-<Slides>2</Slides>
-<Paragraphs>10</Paragraphs>
-<Words>50</Words>
-```
+## Common edits
 
-## Slide Operations
+### Add a slide
+1. Copy `slide1.xml` to `slideN.xml`.
+2. Create `slideN.xml.rels` with the layout relationship.
+3. Add `<Override>` for the new part in `[Content_Types].xml`.
+4. Add a relationship in `presentation.xml.rels` (new rId).
+5. Add `<p:sldId>` in `presentation.xml`'s `<p:sldIdLst>`.
 
-### Adding a New Slide
-When adding a slide to the end of the presentation:
+### Reorder slides
+Reorder `<p:sldId>` entries in `presentation.xml`. File names do *not*
+need to match display order — they're just references.
 
-1. **Create the slide file** (`ppt/slides/slideN.xml`)
-2. **Update `[Content_Types].xml`**: Add Override for the new slide
-3. **Update `ppt/_rels/presentation.xml.rels`**: Add relationship for the new slide
-4. **Update `ppt/presentation.xml`**: Add slide ID to `<p:sldIdLst>`
-5. **Create slide relationships** (`ppt/slides/_rels/slideN.xml.rels`) if needed
-6. **Update `docProps/app.xml`**: Increment slide count and update statistics (if present)
+### Replace an image
+Drop the new image into `ppt/media/` (same name) or update the relationship
+target in `slideN.xml.rels`.
 
-### Duplicating a Slide
-1. Copy the source slide XML file with a new name
-2. Update all IDs in the new slide to be unique
-3. Follow the "Adding a New Slide" steps above
-4. **CRITICAL**: Remove or update any notes slide references in `_rels` files
-5. Remove references to unused media files
+### Remove a slide
+1. Delete `slideN.xml` and its `_rels/slideN.xml.rels`.
+2. Remove the `<Override>` from `[Content_Types].xml`.
+3. Remove the relationship from `presentation.xml.rels`.
+4. Remove the `<p:sldId>` from `presentation.xml`.
 
-### Reordering Slides
-1. **Update `ppt/presentation.xml`**: Reorder `<p:sldId>` elements in `<p:sldIdLst>`
-2. The order of `<p:sldId>` elements determines slide order
-3. Keep slide IDs and relationship IDs unchanged
+---
 
-Example:
-```xml
-<!-- Original order -->
-<p:sldIdLst>
-  <p:sldId id="256" r:id="rId2"/>
-  <p:sldId id="257" r:id="rId3"/>
-  <p:sldId id="258" r:id="rId4"/>
-</p:sldIdLst>
+## Tips
 
-<!-- After moving slide 3 to position 2 -->
-<p:sldIdLst>
-  <p:sldId id="256" r:id="rId2"/>
-  <p:sldId id="258" r:id="rId4"/>
-  <p:sldId id="257" r:id="rId3"/>
-</p:sldIdLst>
-```
-
-### Deleting a Slide
-1. **Remove from `ppt/presentation.xml`**: Delete the `<p:sldId>` entry
-2. **Remove from `ppt/_rels/presentation.xml.rels`**: Delete the relationship
-3. **Remove from `[Content_Types].xml`**: Delete the Override entry
-4. **Delete files**: Remove `ppt/slides/slideN.xml` and `ppt/slides/_rels/slideN.xml.rels`
-5. **Update `docProps/app.xml`**: Decrement slide count and update statistics
-6. **Clean up unused media**: Remove orphaned images from `ppt/media/`
-
-Note: Don't renumber remaining slides - keep their original IDs and filenames.
-
-
-## Common Errors to Avoid
-
-- **Encodings**: Escape unicode characters in ASCII content: `"` becomes `&#8220;`
-- **Images**: Add to `ppt/media/` and update relationship files
-- **Lists**: Omit bullets from list headers
-- **IDs**: Use valid hexadecimal values for UUIDs
-- **Themes**: Check all themes in `theme` directory for colors
-
-## Validation Checklist for Template-Based Presentations
-
-### Before Packing, Always:
-- **Clean unused resources**: Remove unreferenced media, fonts, and notes directories
-- **Fix Content_Types.xml**: Declare ALL slides, layouts, and themes present in the package
-- **Fix relationship IDs**: 
-   - Remove font embed references if not using embedded fonts
-- **Remove broken references**: Check all `_rels` files for references to deleted resources
-
-### Common Template Duplication Pitfalls:
-- Multiple slides referencing the same notes slide after duplication
-- Image/media references from template slides that no longer exist
-- Font embedding references when fonts aren't included
-- Missing slideLayout declarations for layouts 12-25
-- docProps directory may not unpack - this is optional
+- Always validate before repacking. Most "PowerPoint cannot open this
+  file" errors come from missing content type declarations or broken
+  relationships.
+- Preserve XML declarations (`<?xml version="1.0" encoding="UTF-8"
+  standalone="yes"?>`) at the top of each part.
+- Don't reformat XML files unnecessarily — whitespace inside `<a:t>` text
+  runs is significant.
+- When in doubt, diff your unpacked directory against a freshly unpacked
+  copy of the original to find regressions.

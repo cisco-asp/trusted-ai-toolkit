@@ -1,29 +1,37 @@
 #!/usr/bin/env python3
-"""Unpack and format XML contents of Office files (.docx, .pptx, .xlsx)"""
+"""Unpack an Office Open XML file (.pptx, .docx, .xlsx) into a directory.
 
-import random
+Usage:
+    python unpack.py <office_file> <output_dir>
+
+The output directory is created if it does not exist.  If it already exists
+the contents are overwritten.
+"""
+
 import sys
-import defusedxml.minidom
 import zipfile
 from pathlib import Path
 
-# Get command line arguments
-assert len(sys.argv) == 3, "Usage: python unpack.py <office_file> <output_dir>"
-input_file, output_dir = sys.argv[1], sys.argv[2]
 
-# Extract and format
-output_path = Path(output_dir)
-output_path.mkdir(parents=True, exist_ok=True)
-zipfile.ZipFile(input_file).extractall(output_path)
+def unpack(src: str, dst: str) -> None:
+    src_path = Path(src)
+    dst_path = Path(dst)
 
-# Pretty print all XML files
-xml_files = list(output_path.rglob("*.xml")) + list(output_path.rglob("*.rels"))
-for xml_file in xml_files:
-    content = xml_file.read_text(encoding="utf-8")
-    dom = defusedxml.minidom.parseString(content)
-    xml_file.write_bytes(dom.toprettyxml(indent="  ", encoding="ascii"))
+    if not src_path.is_file():
+        print(f"ERROR: '{src}' does not exist or is not a file.", file=sys.stderr)
+        sys.exit(1)
 
-# For .docx files, suggest an RSID for tracked changes
-if input_file.endswith(".docx"):
-    suggested_rsid = "".join(random.choices("0123456789ABCDEF", k=8))
-    print(f"Suggested RSID for edit session: {suggested_rsid}")
+    dst_path.mkdir(parents=True, exist_ok=True)
+
+    with zipfile.ZipFile(src_path, "r") as zf:
+        zf.extractall(dst_path)
+
+    count = sum(1 for _ in dst_path.rglob("*") if _.is_file())
+    print(f"Unpacked {count} files to {dst_path}")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print(__doc__.strip(), file=sys.stderr)
+        sys.exit(1)
+    unpack(sys.argv[1], sys.argv[2])

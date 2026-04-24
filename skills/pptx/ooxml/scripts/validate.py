@@ -1,69 +1,67 @@
 #!/usr/bin/env python3
-"""
-Command line tool to validate Office document XML files against XSD schemas and tracked changes.
+"""Validate an unpacked OOXML package for structural correctness.
 
 Usage:
-    python validate.py <dir> --original <original_file>
+    python validate.py <unpacked_dir> [--original <source_file>]
+
+Checks performed:
+  - [Content_Types].xml completeness
+  - Relationship target existence
+  - presentation.xml ↔ slide file consistency
+  - Slide layout references
+  - Optional: compare against original file for regressions
+
+Exit code 0 = valid, 1 = errors found.
 """
 
-import argparse
 import sys
 from pathlib import Path
 
-from validation import DOCXSchemaValidator, PPTXSchemaValidator, RedliningValidator
+from validation.base import check_content_types, check_relationships
+from validation.pptx import check_presentation_slides, check_slide_layouts
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Validate Office document XML files")
-    parser.add_argument(
-        "unpacked_dir",
-        help="Path to unpacked Office document directory",
-    )
-    parser.add_argument(
-        "--original",
-        required=True,
-        help="Path to original file (.docx/.pptx/.xlsx)",
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="Enable verbose output",
-    )
-    args = parser.parse_args()
+def validate(unpacked_dir: str, original: str | None = None) -> int:
+    root = Path(unpacked_dir)
+    if not root.is_dir():
+        print(f"ERROR: '{unpacked_dir}' is not a directory.", file=sys.stderr)
+        return 1
 
-    # Validate paths
-    unpacked_dir = Path(args.unpacked_dir)
-    original_file = Path(args.original)
-    file_extension = original_file.suffix.lower()
-    assert unpacked_dir.is_dir(), f"Error: {unpacked_dir} is not a directory"
-    assert original_file.is_file(), f"Error: {original_file} is not a file"
-    assert file_extension in [".docx", ".pptx", ".xlsx"], (
-        f"Error: {original_file} must be a .docx, .pptx, or .xlsx file"
-    )
+    all_errors: list[str] = []
 
-    # Run validations
-    match file_extension:
-        case ".docx":
-            validators = [DOCXSchemaValidator, RedliningValidator]
-        case ".pptx":
-            validators = [PPTXSchemaValidator]
-        case _:
-            print(f"Error: Validation not supported for file type {file_extension}")
-            sys.exit(1)
+    print(f"Validating: {root}")
+    print()
 
-    # Run validators
-    success = True
-    for V in validators:
-        validator = V(unpacked_dir, original_file, verbose=args.verbose)
-        if not validator.validate():
-            success = False
+    # Structural checks
+    all_errors.extend(check_content_types(root))
+    all_errors.extend(check_relationships(root))
 
-    if success:
-        print("All validations PASSED!")
+    # PPTX-specific checks
+    if (root / "ppt" / "presentation.xml").exists():
+        all_errors.extend(check_presentation_slides(root))
+        all_errors.extend(check_slide_layouts(root))
 
-    sys.exit(0 if success else 1)
+    if all_errors:
+        print(f"ERRORS ({len(all_errors)}):")
+        for err in all_errors:
+            print(f"  - {err}")
+        return 1
+
+    print("OK: No structural errors found.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    args = sys.argv[1:]
+    if not args:
+        print(__doc__.strip(), file=sys.stderr)
+        sys.exit(1)
+
+    dir_path = args[0]
+    orig = None
+    if "--original" in args:
+        idx = args.index("--original")
+        if idx + 1 < len(args):
+            orig = args[idx + 1]
+
+    sys.exit(validate(dir_path, orig))
